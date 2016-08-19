@@ -16,3 +16,5 @@ link_listings_det <- "C:/Users/Marçal/Desktop/Summer school 2016/Airbnb/listing
 
 #Importing
 df <- import(link_listings_det)
+
+#
