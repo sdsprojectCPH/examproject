@@ -1,1 +1,18 @@
 ## Code for the AIRbnb Data
+
+rm(list=ls())
+
+library("rio")
+library("dplyr")
+library("tidyr")
+library("ggplot2")
+library(readr)
+library(stringr)
+library(jsonlite)
+library("tidytext")
+
+##Links
+link_listings_det <- "C:/Users/Marçal/Desktop/Summer school 2016/Airbnb/listings_det.csv"
+
+#Importing
+df <- import(link_listings_det)
