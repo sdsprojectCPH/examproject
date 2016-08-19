@@ -1,0 +1,123 @@
+rm(list=ls())
+library("readr")
+library("dplyr")
+library("stringr")
+library("NLP")
+library("tm")
+
+df.small = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/listings1.csv")
+df.det = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/listings.csv")
+df.cal = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/calendar.csv")
+df.rev = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/reviews.csv")
+
+##Loading data
+overview.data <-   cbind(df.det$id, df.det$neighborhood_overview, df.det$neighbourhood_cleansed)
+df.overview <- data.frame(overview.data)
+df.overview <- data.frame("id" = df.overview$X1, "overview" = df.overview$X2, "neighbourhood" = df.overview$X3)
+df.overview <- df.overview %>%
+ mutate("overview" = as.character(overview))
+df.overview <- na.omit(df.overview)
+
+##Preps
+library(stringr)
+df.overview.1 <- df.overview %>%
+  mutate(overview = cbind(strsplit(df.overview$overview, " ")))
+
+##Cleaning
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                          FUN=tolower)
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bfrederiksberg\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bnørrebro\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bvesterbro\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bamager\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bvalby\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bvanløse\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bchristianshavn\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bislands\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bbrygge\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bcopenhagen\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bkøbenhavn\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bneighbourhood\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bneighborhood\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bøsterbro\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\bbispebjerg\\b", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                          FUN=function(x) 
+                            gsub("-", "_", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                              FUN=function(x) 
+                                gsub("[[:punct:]]", "", x))
+df.overview.1$overview = lapply(df.overview.1$overview, 
+                                FUN=function(x) 
+                                  gsub("\\d", "", x))
+#df.overview <- df.overview %>%
+  #mutate(neighbourhood = as.character(df.overview$neighbourhood))
+
+##Corpus (?) and more cleaning
+library("tm")
+combi_overview = c(Corpus(VectorSource(df.overview.1$overview)),
+                      Corpus(VectorSource(df.overview.1$overview)))
+combi_overview = tm_map(combi_overview, stemDocument,
+                           language ="english")
+combi_overview = tm_map(combi_overview, stemDocument,
+                       language ="danish")
+combi_overview = tm_map(combi_overview, removeWords, stopwords(
+                        kind ="english"))
+combi_overview = tm_map(combi_overview, removeWords, stopwords(
+                        kind ="danish"))
+combi_overviewDTM = DocumentTermMatrix(combi_overview)
+combi_overviewDTM = removeSparseTerms(combi_overviewDTM, 0.99)
+combi_overviewDTM = as.data.frame(
+  as.matrix(combi_overviewDTM))
+combi_overviewDTM$neighbourhood = as.factor(
+  c(df.overview.1$neighbourhood, rep("Frederiksberg", nrow(df.overview.1))))
+
+
+## Running the model
+trainDTM  = combi_overviewDTM[1:nrow(df.overview.1), ]
+testDTM = combi_overviewDTM[-(1:nrow(df.overview.1)), ]
+trainDTM$neighbourhood
+testDTM$neighbourhood
+
+library("rpart")
+set.seed(1)
+model = rpart(neighbourhood ~ ., data = trainDTM, 
+              method = "class")
+neighbourhood = predict(model, newdata = testDTM, 
+                  type = "class")
+
+
+library(rpart.plot)
+prp(model)
+
+###############################################################
