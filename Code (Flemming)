@@ -23,7 +23,7 @@ library(stringr)
 df.overview.1 <- df.overview %>%
   mutate(overview = cbind(strsplit(df.overview$overview, " ")))
 
-##Cleaning
+##Cleaning##
 df.overview.1$overview = lapply(df.overview.1$overview, 
                           FUN=tolower)
 df.overview.1$overview = lapply(df.overview.1$overview, 
