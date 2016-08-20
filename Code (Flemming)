@@ -67,8 +67,12 @@ replacement.vector <- c("copenh", "vej", "gade", "fælled", "assistens",
                         "bro", "indre", "by", "christianshavn", "amager",
                         "frederiksberg", "islands", "brygge", "neighborhood",
                         "neighbourhood", "neighbourhod", "absalon", "havn", 
-                        "meatpack", "district", "christiania", "latiner", "bjerg",
-                        "mermaid", "torveha", "svanemøl", "king")
+                        "meat", "district", "christiania", "latiner", "bjerg",
+                        "mermaid", "torveha", "svanemøl", "king", "parken",
+                        "zoo", "metro", "garde", "carlsberg", "botan", "opera",
+                        "cemetery","tivoli", "sønd", "strøget", "royal", "anders",
+                         "kirkegård", "gammel", "kong", "little", "stadium",
+                        "amalienborg", "enghave", "torv", "canal", "beach")
 
 for(i in 1:length(replacement.vector)){
   df.overview.1$overview = lapply(df.overview.1$overview,
