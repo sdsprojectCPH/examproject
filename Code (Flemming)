@@ -124,15 +124,17 @@ train_ind <- sample(seq_len(nrow(combi_overviewDTM)), size = split)
 trainDTM  = combi_overviewDTM[train_ind, ]
 testDTM = combi_overviewDTM[-train_ind, ]
 
-length(trainDTM)
-length(testDTM)
+####################################RANDOM FOREST######################################
+library(randomForest)
+
+rfm <- randomForest(neighbourhood~ ., trainDTM)
+p <- predict(rfm, testDTM)
+rfm
+p
 
 
-## Running the model
-trainDTM  = combi_overviewDTM[1:nrow(df.overview.1), ]
-testDTM = combi_overviewDTM[-(1:nrow(df.overview.1)), ]
-trainDTM$neighbourhood
-testDTM$neighbourhood
+
+#########################################################################################
 
 
 library("rpart")
