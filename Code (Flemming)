@@ -143,10 +143,16 @@ library(rpart.plot)
 prp(model)
 
 ############## CHECK ACCURACY ACCURACY ###############
+neighbourhood
+View(data.frame(neighbourhood))
+
+nrow(testDTM)
 results <- data.frame("prediction"=neighbourhood)
 View(results)
-reality <- df.overview.1$neighbourhood
-comparison <- data.frame(cbind("prediction"=results, "reality"=reality))
+rnames <- as.numeric(rownames(results))
+reality <- df.overview.1$neighbourhood[rnames]
+
+comparison <- data.frame(cbind("reality"=reality, "prediction"=results))
 View(comparison)
 
 comparison <- comparison %>%
@@ -161,5 +167,3 @@ comparison.summary <- comparison %>%
   group_by(reality) %>%
   summarise(mean(check))
 View(comparison.summary)
-
-###############################################################
