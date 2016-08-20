@@ -128,9 +128,21 @@ combi_overviewDTM = as.data.frame(
 df.overview.1$neighbourhood <- as.character(df.overview.1$neighbourhood)
 class(df.overview.1$neighbourhood)
 
-new_neighbourhood <- c(df.overview.1$neighbourhood, df.overview.1$neighbourhood)
+new_neighbourhood <- c(df.overview.1$neighbourhood)
 
+new_neighbourhood
 combi_overviewDTM <- data.frame(cbind(combi_overviewDTM, "neighbourhood"=new_neighbourhood))
+
+## Splitting the data
+split <- floor(0.75 * nrow(combi_overviewDTM))
+set.seed(1)
+train_ind <- sample(seq_len(nrow(combi_overviewDTM)), size = split)
+
+trainDTM  = combi_overviewDTM[train_ind, ]
+testDTM = combi_overviewDTM[-train_ind, ]
+
+length(trainDTM)
+length(testDTM)
 
 
 ## Running the model
