@@ -78,8 +78,7 @@ df.overview.1$overview = lapply(df.overview.1$overview,
 
 ##Corpus (?) and more cleaning
 library("tm")
-combi_overview = c(Corpus(VectorSource(df.overview.1$overview)),
-                      Corpus(VectorSource(df.overview.1$overview)))
+combi_overview = c(Corpus(VectorSource(df.overview.1$overview)))
 combi_overview = tm_map(combi_overview, stemDocument,
                            language ="english")
 combi_overview = tm_map(combi_overview, stemDocument,
@@ -99,7 +98,6 @@ class(df.overview.1$neighbourhood)
 
 new_neighbourhood <- c(df.overview.1$neighbourhood)
 
-new_neighbourhood
 combi_overviewDTM <- data.frame(cbind(combi_overviewDTM, "neighbourhood"=new_neighbourhood))
 
 ## Splitting the data
@@ -119,8 +117,6 @@ trainDTM  = combi_overviewDTM[1:nrow(df.overview.1), ]
 testDTM = combi_overviewDTM[-(1:nrow(df.overview.1)), ]
 trainDTM$neighbourhood
 testDTM$neighbourhood
-trainDTM$neighbourhood[23]
-testDTM$neighbourhood[23]
 
 
 library("rpart")
