@@ -18,6 +18,30 @@ df.overview <- df.overview %>%
  mutate("overview" = as.character(overview))
 df.overview <- na.omit(df.overview)
 
+## CREATE A PRICE HISTOGRAM
+#Prices as numeric
+View(df.det)
+df.det$det <- sub('\\$','',as.character(df.det$price))
+df.det$price <-sub("\\,", "", df.det$price)
+df.det$price <- as.numeric(df.det$price)
+summary(df.det$price)
+# Histogram
+id
+hist(df.det$price, 
+     main="Prices", 
+     xlab="Price", 
+     border="blue", 
+     col="blue",
+     xlim=c(0,2500), ylim = c(0,2000),
+     las=1, 
+     breaks=800)
+
+## Summary 
+plot(table(df.overview$neighbourhood))
+n.neighbourhood <- data.frame(table(df.overview$neighbourhood))
+n.neighbourhood
+
+
 ##Preps
 library(stringr)
 df.overview.1 <- df.overview %>%
