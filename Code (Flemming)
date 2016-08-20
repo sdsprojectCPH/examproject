@@ -161,7 +161,16 @@ comparison <- data.frame(cbind("prediction"=results, "reality"=reality))
 View(comparison)
 
 comparison <- comparison %>%
-  mutate(check=ifelse(prediction==reality, "Good", "Bad"))
+  mutate(check=ifelse(prediction==reality, "1", "0"))
 
+comparison$check <- as.numeric(comparison$check)
+class(comparison$check)
+
+table(comparison$check)
+
+comparison.summary <- comparison %>%
+  group_by(reality) %>%
+  summarise(mean(check))
+View(comparison.summary)
 
 ###############################################################
