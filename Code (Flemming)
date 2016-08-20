@@ -99,8 +99,14 @@ combi_overviewDTM = DocumentTermMatrix(combi_overview)
 combi_overviewDTM = removeSparseTerms(combi_overviewDTM, 0.99)
 combi_overviewDTM = as.data.frame(
   as.matrix(combi_overviewDTM))
-combi_overviewDTM$neighbourhood = as.factor(
-  c(df.overview.1$neighbourhood, rep("Frederiksberg", nrow(df.overview.1))))
+  
+##Adding Neighbourhood column at the end
+df.overview.1$neighbourhood <- as.character(df.overview.1$neighbourhood)
+class(df.overview.1$neighbourhood)
+
+new_neighbourhood <- c(df.overview.1$neighbourhood, df.overview.1$neighbourhood)
+
+combi_overviewDTM <- data.frame(cbind(combi_overviewDTM, "neighbourhood"=new_neighbourhood))
 
 
 ## Running the model
@@ -108,6 +114,9 @@ trainDTM  = combi_overviewDTM[1:nrow(df.overview.1), ]
 testDTM = combi_overviewDTM[-(1:nrow(df.overview.1)), ]
 trainDTM$neighbourhood
 testDTM$neighbourhood
+trainDTM$neighbourhood[23]
+testDTM$neighbourhood[23]
+
 
 library("rpart")
 set.seed(1)
@@ -119,5 +128,16 @@ neighbourhood = predict(model, newdata = testDTM,
 
 library(rpart.plot)
 prp(model)
+
+############## CHECK ACCURACY ACCURACY ###############
+results <- data.frame("prediction"=neighbourhood)
+View(results)
+reality <- df.overview.1$neighbourhood
+comparison <- data.frame(cbind("prediction"=results, "reality"=reality))
+View(comparison)
+
+comparison <- comparison %>%
+  mutate(check=ifelse(prediction==reality, "Good", "Bad"))
+
 
 ###############################################################
