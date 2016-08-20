@@ -43,9 +43,21 @@ n.neighbourhood
 
 
 ##Preps
+
+
+r <- with(df.overview, which (neighbourhood=="Vanlse" | 
+                                neighbourhood == "Valby" | 
+                                neighbourhood == "Brnshj-Husum" |
+                                neighbourhood == "Bispebjerg" |
+                                neighbourhood == "Amager Vest" |
+                                , arr.ind=TRUE)) 
+
+df.overview <- df.overview[-r, ]
+
 library(stringr)
 df.overview.1 <- df.overview %>%
   mutate(overview = cbind(strsplit(df.overview$overview, " ")))
+
 
 ## lower case letters
 df.overview.1$overview = lapply(df.overview.1$overview, 
