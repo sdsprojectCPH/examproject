@@ -47,54 +47,22 @@ library(stringr)
 df.overview.1 <- df.overview %>%
   mutate(overview = cbind(strsplit(df.overview$overview, " ")))
 
-##Cleaning##
+## lower case letters
 df.overview.1$overview = lapply(df.overview.1$overview, 
                           FUN=tolower)
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bfrederiksberg\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bnørrebro\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bvesterbro\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bamager\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bvalby\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bvanløse\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bchristianshavn\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bislands\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bbrygge\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bcopenhagen\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bkøbenhavn\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bneighbourhood\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bneighborhood\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bøsterbro\\b", "", x))
-df.overview.1$overview = lapply(df.overview.1$overview, 
-                                FUN=function(x) 
-                                  gsub("\\bbispebjerg\\b", "", x))
+##removing unique copenhagen characteristics
+replacement.vector <- c("copenh", "vej", "gade", "fælled", "assistens", 
+                        "bro", "indre", "by", "christianshavn", "amager",
+                        "frederiksberg", "islands", "brygge", "neighborhood",
+                        "neighbourhood", "neighbourhod", "absalon", "havn", 
+                        "meatpack", "district", "christiania", "latiner", "bjerg")
+
+for(i in 1:length(replacement.vector)){
+  df.overview.1$overview = lapply(df.overview.1$overview,
+                                 FUN=function(x)
+                                 grep(replacement.vector[i],x,invert = TRUE, value = TRUE))
+}
+## Cleaning
 df.overview.1$overview = lapply(df.overview.1$overview, 
                           FUN=function(x) 
                             gsub("-", "_", x))
