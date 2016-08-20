@@ -55,7 +55,8 @@ replacement.vector <- c("copenh", "vej", "gade", "fælled", "assistens",
                         "bro", "indre", "by", "christianshavn", "amager",
                         "frederiksberg", "islands", "brygge", "neighborhood",
                         "neighbourhood", "neighbourhod", "absalon", "havn", 
-                        "meatpack", "district", "christiania", "latiner", "bjerg")
+                        "meatpack", "district", "christiania", "latiner", "bjerg",
+                        "mermaid", "torveha", "svanemøl", "king")
 
 for(i in 1:length(replacement.vector)){
   df.overview.1$overview = lapply(df.overview.1$overview,
