@@ -132,7 +132,21 @@ p <- predict(rfm, testDTM)
 rfm
 p
 
+#Results
+results <- data.frame("prediction" = p)
+rnames <- as.numeric(row.names(results))
+reality <- df.overview.1$neighbourhood[rnames]
+comparison <- data.frame(cbind("reality" = reality , "prediction" = results))
+comparison <- comparison %>%
+  mutate(check = ifelse(prediction == reality,1,0))
+View(comparison)
+names(comparison)
+table(comparison$check)
 
+comparison.summary <- comparison %>%
+  group_by(reality) %>%
+  summarise(mean(check))
+View(comparison.summary)
 
 #########################################################################################
 
