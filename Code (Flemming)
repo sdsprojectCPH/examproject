@@ -153,6 +153,9 @@ View(comparison.summary)
 
 mean(comparison$check)
 
+# Visualizing the predictor model
+plot(rfm, log="y")
+varImpPlot(rfm)
 
 importance <- data.frame(importance(rfm))
 #########################################################################################
