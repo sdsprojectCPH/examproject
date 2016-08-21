@@ -5,10 +5,10 @@ library("stringr")
 library("NLP")
 library("tm")
 
-df.small = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/listings1.csv")
+#df.small = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/listings1.csv")
 df.det = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/listings.csv")
-df.cal = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/calendar.csv")
-df.rev = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/reviews.csv")
+#df.cal = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/calendar.csv")
+#df.rev = read_csv("C:/Users/Dose/Google Drev/Polit/SDS/airbnb/reviews.csv")
 
 ##Loading data
 overview.data <-   cbind(df.det$id, df.det$neighborhood_overview, df.det$neighbourhood_cleansed)
