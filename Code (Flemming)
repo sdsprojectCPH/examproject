@@ -49,8 +49,9 @@ r <- with(df.overview, which (neighbourhood=="Vanlse" |
                                 neighbourhood == "Valby" | 
                                 neighbourhood == "Brnshj-Husum" |
                                 neighbourhood == "Bispebjerg" |
-                                neighbourhood == "Amager Vest"
-                                , arr.ind=TRUE)) 
+                                neighbourhood == "Amager Vest"|
+                                neighbourhood == "Amager st",
+                                 arr.ind=TRUE)) 
 
 df.overview <- df.overview[-r, ]
 
@@ -64,7 +65,7 @@ df.overview.1$overview = lapply(df.overview.1$overview,
                           FUN=tolower)
 ##removing unique copenhagen characteristics
 replacement.vector <- c("copenh", "vej", "gade", "fælled", "assistens", 
-                        "bro", "indre", "by", "christianshavn", "amager",
+                        "bro", "indre", "by", "amager",
                         "frederiksberg", "islands", "brygge", "neighborhood",
                         "neighbourhood", "neighbourhod", "absalon", "havn", 
                         "meat", "district", "christiania", "latiner", "bjerg",
@@ -72,7 +73,9 @@ replacement.vector <- c("copenh", "vej", "gade", "fælled", "assistens",
                         "zoo", "metro", "garde", "carlsberg", "botan", "opera",
                         "cemetery","tivoli", "sønd", "strøget", "royal", "anders",
                          "kirkegård", "gammel", "kong", "little", "stadium",
-                        "amalienborg", "enghave", "torv", "canal", "beach")
+                        "amalienborg", "enghave", "torv", "canal", "beach", "boulevard",
+                        "søerne", "lakes", "noma", "rosenborg", "denmark", "castle",
+                        "nørreport", "kirkegaard", "kierkegaard", "christian")
 
 for(i in 1:length(replacement.vector)){
   df.overview.1$overview = lapply(df.overview.1$overview,
@@ -130,7 +133,7 @@ library(randomForest)
 rfm <- randomForest(neighbourhood~ ., trainDTM)
 p <- predict(rfm, testDTM)
 rfm
-p
+
 
 #Results
 results <- data.frame("prediction" = p)
@@ -148,42 +151,9 @@ comparison.summary <- comparison %>%
   summarise(mean(check))
 View(comparison.summary)
 
+mean(comparison$check)
+
+
+importance <- data.frame(importance(rfm))
 #########################################################################################
 
-
-library("rpart")
-set.seed(1)
-model = rpart(neighbourhood ~ ., data = trainDTM, 
-              method = "class")
-neighbourhood = predict(model, newdata = testDTM, 
-                  type = "class")
-
-
-library(rpart.plot)
-prp(model)
-
-############## CHECK ACCURACY ACCURACY ###############
-neighbourhood
-View(data.frame(neighbourhood))
-
-nrow(testDTM)
-results <- data.frame("prediction"=neighbourhood)
-View(results)
-rnames <- as.numeric(rownames(results))
-reality <- df.overview.1$neighbourhood[rnames]
-
-comparison <- data.frame(cbind("reality"=reality, "prediction"=results))
-View(comparison)
-
-comparison <- comparison %>%
-  mutate(check=ifelse(prediction==reality, "1", "0"))
-
-comparison$check <- as.numeric(comparison$check)
-class(comparison$check)
-
-table(comparison$check)
-
-comparison.summary <- comparison %>%
-  group_by(reality) %>%
-  summarise(mean(check))
-View(comparison.summary)
