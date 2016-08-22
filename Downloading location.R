@@ -26,16 +26,16 @@ df.location = df.listings %>%
   select(lon, lat, zip, id) %>% 
   arrange(-zip)
 
-df.location1 = df.location[1:2500, ]
+df.location = df.location[1:2500, ]
 
 result = do.call(rbind,
                  lapply(1:nrow(df.location),
                         function(i)revgeocode(as.numeric(df.location[i,1:2]))))
 
-df.location_missing1 = cbind(df.location,result)
+df.location_missing = cbind(df.location,result)
 
 library(stringr)
-df.location_missing1$zipcode <- substring(str_extract(df.location_missing$result,", [0-9]{4} "),2,8)
-df.zipcode1 = cbind(df.location,df.location_missing$zipcode)
+df.location_missing$zipcode <- substring(str_extract(df.location_missing$result,", [0-9]{4} "),2,8)
+df.zipcode = cbind(df.location,df.location_missing$zipcode)
 
-write.csv(file = "zipcodes1.csv", x = df.location_missing1)
+write.csv(file = "zipcodes1.csv", x = df.zipcode)
