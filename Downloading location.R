@@ -36,6 +36,6 @@ df.location_missing = cbind(df.location,result)
 
 library(stringr)
 df.location_missing$zipcode <- substring(str_extract(df.location_missing$result,", [0-9]{4} "),2,8)
-df.zipcode = cbind(df.location,df.location_missing$zipcode)
+#df.zipcode = cbind(df.location,df.location_missing$zipcode)
 
-write.csv(file = "zipcodes1.csv", x = df.zipcode)
+write.csv(file = "zipcodes1.csv", x = df.location_missing)
