@@ -162,6 +162,12 @@ par(mar=c(5,0,4,2)) #No margin on the left side
 plot(c(0,1),type="n", axes=F, xlab="", ylab="")
 legend("top", colnames(rfm$err.rate),col=1:5,cex=0.6,fill=1:5)
 
+# Heat map with frequencies 
+install.packages("d3heatmap")
+library(d3heatmap)
+d3heatmap(rfm$confusion[,1:5], theme="dark", scale = 'row', xlab = "True class", ylab =  "Predicted class",
+          main = "Heat map")
+
 #Important words
 varImpPlot(rfm)
 
