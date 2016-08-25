@@ -153,6 +153,17 @@ View(comparison.summary)
 
 mean(comparison$check)
 
+#comparing error rates from training and test data set
+rfm$confusion[,6]
+error.rates <- data.frame(rfm$confusion[,6], 1-comparison.summary[,2])
+colnames(error.rates) <- c("OBB error rate", "Test error rate")
+View(error.rates)
+error.rates <- round(error.rates, digits=3)
+library(gridExtra)
+error.table <- grid.table(error.rates)
+error.table
+
+
 # Visualizing the predictor model
 layout(matrix(c(1,2),nrow=1),
        width=c(7,6)) 
