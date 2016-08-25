@@ -134,8 +134,37 @@ rfm <- randomForest(neighbourhood~ ., trainDTM)
 p <- predict(rfm, testDTM)
 rfm
 
+###### Generating a table for the confusion matrix- Training data
+matrix <-matrix(rfm$confusion[1:5, 1:5], nrow=5, ncol=5)
+colnames(matrix)  <- c("Frederiksberg","Indre By", "Nrrebro", "Sterbro", "Vesterbro-Kongens Enghave")
+rownames(matrix) <- c("Frederiksberg","Indre By", "Nrrebro", "Sterbro", "Vesterbro-Kongens Enghave")
 
-#Results
+confusionmatrix <- data.frame(matrix)
+library(gridExtra)
+freq <- grid.table(confusionmatrix)
+freq
+
+##### Visualizing the predictor model - Training data
+layout(matrix(c(1,2),nrow=1),
+       width=c(7,6)) 
+par(mar=c(5,4,4,0)) #No margin on the right side
+plot(rfm)
+par(mar=c(5,0,4,2)) #No margin on the left side
+plot(c(0,1),type="n", axes=F, xlab="", ylab="")
+legend("top", colnames(rfm$err.rate),col=1:5,cex=0.6,fill=1:5)
+
+##### Heat map with frequencies - Training data
+install.packages("d3heatmap")
+library(d3heatmap)
+d3heatmap(rfm$confusion[,1:5], theme="dark", scale = 'row', xlab = "True class", ylab =  "Predicted class",
+          main = "Heat map")
+
+#Important words
+varImpPlot(rfm)
+
+importance <- data.frame(importance(rfm))
+
+#####Results - Test data
 results <- data.frame("prediction" = p)
 rnames <- as.numeric(row.names(results))
 reality <- df.overview.1$neighbourhood[rnames]
@@ -153,7 +182,7 @@ View(comparison.summary)
 
 mean(comparison$check)
 
-#comparing error rates from training and test data set
+##### comparing error rates from training and test data set
 rfm$confusion[,6]
 error.rates <- data.frame(rfm$confusion[,6], 1-comparison.summary[,2])
 colnames(error.rates) <- c("OBB error rate", "Test error rate")
@@ -164,24 +193,5 @@ error.table <- grid.table(error.rates)
 error.table
 
 
-# Visualizing the predictor model
-layout(matrix(c(1,2),nrow=1),
-       width=c(7,6)) 
-par(mar=c(5,4,4,0)) #No margin on the right side
-plot(rfm)
-par(mar=c(5,0,4,2)) #No margin on the left side
-plot(c(0,1),type="n", axes=F, xlab="", ylab="")
-legend("top", colnames(rfm$err.rate),col=1:5,cex=0.6,fill=1:5)
-
-# Heat map with frequencies 
-install.packages("d3heatmap")
-library(d3heatmap)
-d3heatmap(rfm$confusion[,1:5], theme="dark", scale = 'row', xlab = "True class", ylab =  "Predicted class",
-          main = "Heat map")
-
-#Important words
-varImpPlot(rfm)
-
-importance <- data.frame(importance(rfm))
 #########################################################################################
 
