@@ -41,36 +41,36 @@ jsonmap = geojson_read("C:/Users/Janek Eskildsen/Dropbox/Økonomi/Kandidat/Social
 ########################################################################################################################
 ############################          Getting the correct location                 #####################################
 ########################################################################################################################
-
-
+#
+#
 # In this section, we download the address of each listing based on longitude and lattitude. 
-
-df.location = df.listings %>% # Create data.frame with lat, lon, zip and id. 
-  mutate(
-    lat = as.numeric(latitude),
-    lon = as.numeric(longitude),
-    zip = as.numeric(zipcode)
-  ) %>% 
-  select(lon, lat, zip, id) %>% 
-  arrange(-zip)
+#
+#df.location = df.listings %>% # Create data.frame with lat, lon, zip and id. 
+#  mutate(
+#    lat = as.numeric(latitude),
+#    lon = as.numeric(longitude),
+#    zip = as.numeric(zipcode)
+#  ) %>% 
+#  select(lon, lat, zip, id) %>% 
+#  arrange(-zip)
 
 # Google only lets you request 2500 times per day, thus we had to limit the number of requests to 2500:
-df.location = df.location[1:2500, ] # This is changed to 2501:5000 and so forth on each computer.
+#df.location = df.location[1:2500, ] # This is changed to 2501:5000 and so forth on each computer.
 
 # This function downloads the relevant address for each listing. 
-library("ggmap")
-result = do.call(rbind,
-                 lapply(1:nrow(df.location),
-                        function(i)revgeocode(as.numeric(df.location[i,1:2]))))
+#library("ggmap")
+#result = do.call(rbind,
+#                 lapply(1:nrow(df.location),
+#                        function(i)revgeocode(as.numeric(df.location[i,1:2]))))
 
-df.location_missing = cbind(df.location,result)
+#df.location_missing = cbind(df.location,result)
 
 # Extract the zipcode from the address
-library(stringr) 
-df.location_missing$zipcode <- substring(str_extract(df.location_missing$result,", [0-9]{4} "),2,8)
+#library(stringr) 
+#df.location_missing$zipcode <- substring(str_extract(df.location_missing$result,", [0-9]{4} "),2,8)
 #df.zipcode = cbind(df.location,df.location_missing$zipcode)
 
-write.csv(file = "zipcodes1.csv", x = df.location_missing) #this was changed to "zipcodes2.csv and so forth on each computer.
+#write.csv(file = "zipcodes1.csv", x = df.location_missing) #this was changed to "zipcodes2.csv and so forth on each computer.
 
 # Each .csv file was uploaded to github, so every member of the group could download the datasets.
 
@@ -264,17 +264,18 @@ ggsave(plot = p, file = "Figures/Airbnb neighbourhoods.jpeg",
 df.loc.compare = df.location %>% 
   mutate(
     exact_location = ifelse(is_location_exact == "t", 1, 0),
-    exact_rate = sum(exact_location) / nrow(df.location),
+    exact_loc_rate = sum(exact_location) / nrow(df.location),
     zipcode = ifelse(is.na(zipcode)==TRUE, 0, ifelse(zipcode<=1499, 1499, 
                       ifelse(zipcode<=1799, 1799, 
                              ifelse(zipcode<=2000, 2000, zipcode)))),
     zipcode_new = ifelse(is.na(zipcode_new)==TRUE, 0, ifelse(zipcode_new<=1499, 1499, 
                         ifelse(zipcode_new<=1799, 1799, 
                                ifelse(zipcode_new<=2000, 2000, zipcode_new)))),
-    exact_zip = ifelse(zipcode == zipcode_new, 1, 0)
+    exact_zip = ifelse(zipcode == zipcode_new, 1, 0),
+    exact_zip_rate = sum(exact_zip) / nrow(df.location)
   ) %>% 
   select(id, neighborhood_overview, latitude, longitude, street, result, city, neighbourhood, neighbourhood_cleansed,
-         postal_district, zipcode, zipcode_new, is_location_exact, exact_location, exact_rate, exact_zip) %>% 
+         postal_district, zipcode, zipcode_new, is_location_exact, exact_location, exact_loc_rate, exact_zip, exact_zip_rate) %>% 
   arrange(exact_location)
 
 df.final = df.loc.compare[!(df.loc.compare$exact_location==0&df.loc.compare$exact_zip==0),]
@@ -359,13 +360,17 @@ cph.map = ggmap(get_map(
 
 cph.map
 
-dir.create("tempdir1")
-writeOGR(obj=jsonmap, dsn="tempdir1", layer="jsonmap", driver="ESRI Shapefile")
+##################################################################################################################
+#                                            Lets make a shape file                                              #
+##################################################################################################################
+
+#dir.create("tempdir")
+#writeOGR(obj=jsonmap, dsn="tempdir", layer="jsonmap", driver="ESRI Shapefile")
+writeOGR()
 
 Shape = readOGR("tempdir1", "jsonmap")
 Shape = spTransform(Shape, CRS("+proj=longlat +datum=WGS84"))
 
-plot(Shape)
 names(Shape)
 View(Shape)
 
@@ -374,6 +379,8 @@ Neighbourhoods = merge(Shape.f, Shape@data, by.x = "id", by.y="nghbrhd")
 head(Neighbourhoods)
 
 hoods = Neighbourhoods %>% select(id) %>% distinct()
+
+length(Neighbourhood_labels)
 
 values = df.group1[, 1:2] %>% 
   mutate(
@@ -385,20 +392,99 @@ NH = merge(Neighbourhoods, values, by.x="id")
 
 NH %>% group_by(id) %>% do(head(., 1)) %>% head(10)
 
-ggplot(NH, aes(long, lat, group = group)) + 
-  geom_polygon(aes(fill = n))
+## Here we are creating names/values, which are centered in the map ----------------------------------------------------------------
 
-choropeth = cph.map + geom_polygon(aes(fill = n, x = long, y = lat, group = group), 
-             data = NH,
-             alpha = 0.8, 
-             color = "black",
-             size = 0.2) 
-ggsave(plot = choropeth, file = "Figures/choropeth.png",
+old_labels = df.group1$neighbourhood_cleansed
+new_labels = c("Amager Øst", "Amager Vest", "Bispebjerg", "Brønshøj/Husum", "Frederiksberg", "Indre By", "Nørrebro", "Østerbro", "Valby", "Vanløse", "Vesterbro")
+
+idList = Shape@data$nghbrhd
+
+
+df.centroids = as.data.frame(coordinates(Shape))
+names(df.centroids) = c("long", "lat")
+
+values = values %>% 
+  arrange(id)
+
+map.cnames = data.frame(df.centroids, id = idList)%>% 
+  arrange(id) 
+map.cnames$n = sprintf("n=%.0f", values$n)
+map.cnames$id = new_labels
+
+
+## Finished. Lets make a map now -----------------------------------------------------------------------------------------------------
+
+map = cph.map + geom_polygon(data = NH, aes(x = long, y = lat, group=group), colour="black", fill="grey", size = 0.6, alpha = 0.4) +
+  labs(x = "Longitude", y = "Latitude") + theme(
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 10)
+  )
+map = map + geom_text(data = map.cnames, aes(x = long, y = lat, label = id), size = 3, fontface=2)
+map
+
+ggsave(plot = map, file = "Figures/map.png",
        width = 8, height = 6)
 
-overview = cph.map + geom_polygon(data = NH, aes(x = long, y = lat, group = group), fill = "red", color = "black", size = 1, alpha = 0.5) +
-  geom_point(data = df.address1, aes(x = lon, y = lat), color = "blue", size = 1.2) 
+
+choropeth = cph.map + geom_polygon(aes(fill = n, x = long, y = lat, group = group), 
+                                   data = NH, alpha = 0.8, color = "black",size = 0.2) + 
+  scale_fill_gradient(low = "white", high = "red", name = "Number of listings:    ") + 
+  labs(x = "Longitude", y = "") +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.key.size = unit(0.5, "cm"),
+    axis.text = element_text(size = 10), 
+    axis.title = element_text(size = 10)) +
+  geom_text(data = map.cnames, aes(x = long, y = lat, label = n), size = 2.5, fontface=2)
+choropeth
+
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+legend = get_legend(choropeth)
+
+choropeth = cph.map + geom_polygon(aes(fill = n, x = long, y = lat, group = group), 
+                                   data = NH, alpha = 0.8, color = "black",size = 0.2) + 
+  scale_fill_gradient(low = "white", high = "red") + 
+  labs(x = "Longitude", y = "") +
+  theme(
+    legend.position = "none",
+    axis.text = element_text(size = 10), 
+    axis.title = element_text(size = 10)) +
+  geom_text(data = map.cnames, aes(x = long, y = lat, label = n), size = 2.5, fontface=2)
+choropeth
+
+overview = cph.map + 
+  geom_point(data = df.address1, aes(x = lon, y = lat, color = neighbourhood_cleansed), size = 1, show.legend = FALSE) +
+  geom_polygon(data = NH, aes(x = long, y = lat, group = group), fill = "grey", color = "black", size = 0.5, alpha = 0.4)  
+
+overview = overview + labs(x = "Longitude", y = "Latitude") +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "none",
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 10)) +
+  geom_text(data = map.cnames, aes(x = long, y = lat, label = id), size = 2, fontface=2)
 overview
+
+library("cowplot")
+library("gridExtra")
+blankPlot <- ggplot()+geom_blank(aes(1,1)) + 
+  cowplot::theme_nothing()
+
+
+my.choropeths = grid.arrange(overview, choropeth, blankPlot, legend, 
+              ncol=2, nrow = 2, 
+              widths = c(4, 4), heights = c(4, 0.4))
+
+ggsave(plot = my.choropeths, file = "Figures/final.png",
+       width = 8, height = 4.4)
 
 
 ## -----------------------------     Tidy data     ----------------------------------------------------------
